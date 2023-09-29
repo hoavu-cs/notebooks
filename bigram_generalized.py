@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 batch_size = 32
-block_size = 8
+block_size = 20
 max_epochs = 10000
 torch.manual_seed(103)
 n_embed = 64
@@ -91,4 +91,5 @@ for steps in range(max_epochs):
 
 logits, loss = m(xb, yb)
 idx = torch.zeros((1, 1), dtype=torch.long)
-print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))
+#m.generate(idx, max_new_tokens=7)[0].tolist()
+print(decode(m.generate(idx, max_new_tokens=20)[0].tolist()))
