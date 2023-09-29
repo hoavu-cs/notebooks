@@ -3,10 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 batch_size = 32
-block_size = 20
+block_size = 100
 max_epochs = 10000
 torch.manual_seed(103)
 n_embed = 64
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 filename = 'datasets/vietnamese/1984.txt'
 with open(filename, 'r', encoding='utf-8') as file:
@@ -36,6 +38,7 @@ def estimate_loss(model, split):
     model.eval()
     with torch.no_grad():
         x, y = get_batch(split)
+        x, y = x.to(device), y.to(device)
         _, loss = model(x, y)
     model.train()
     return loss.item()
@@ -50,7 +53,7 @@ class BigramLanguageModel(nn.Module):
     def forward(self, idx, targets=None):
         B, T = idx.shape
         tok_emb = self.embedding(idx) # (B, T, C)
-        pos_emb = self.position_embedding_table(torch.arange(T)) # (T, C)
+        pos_emb = self.position_embedding_table(torch.arange(T).to(device)) # (T, C)
         x = tok_emb + pos_emb
         logits = self.lm_head(x)
         if targets == None:
@@ -76,11 +79,12 @@ class BigramLanguageModel(nn.Module):
         return idx
 
 # Create model and training
-m = BigramLanguageModel(vocab_size)
+m = BigramLanguageModel(vocab_size).to(device)
 optimizer = torch.optim.Adam(m.parameters(), lr=1e-3)
 
 for steps in range(max_epochs):
     xb, yb = get_batch('train')
+    xb, yb = xb.to(device), yb.to(device)
     logits, loss = m(xb, yb)
     optimizer.zero_grad()
     loss.backward()
@@ -90,6 +94,6 @@ for steps in range(max_epochs):
         print(f'Step: {steps}, Eval Loss: {estimate_loss(m, "val"):.4f}')
 
 logits, loss = m(xb, yb)
-idx = torch.zeros((1, 1), dtype=torch.long)
+idx = torch.zeros((1, 1), dtype=torch.long).to(device)
 #m.generate(idx, max_new_tokens=7)[0].tolist()
-print(decode(m.generate(idx, max_new_tokens=20)[0].tolist()))
+print(decode(m.generate(idx, max_new_tokens=block_size)[0].tolist()))
