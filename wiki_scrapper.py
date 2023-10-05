@@ -5,19 +5,19 @@ import csv
 import time
 import pandas as pd
 # Initialize Wikipedia API wrapper
-wikipedia.set_lang("vi")
+wikipedia.set_lang("en")
 
 # Initialize counter
 counter = 0
 
 # Open a CSV file to write summaries
-with open('article_summaries_2.csv', 'w', encoding='utf-8', newline='') as f:
+with open('article_summaries_3.csv', 'w', encoding='utf-8', newline='') as f:
     writer = csv.writer(f, quotechar='"', quoting=csv.QUOTE_ALL)
     
     # Write the header
     writer.writerow(["Title", "Summary"])
     
-    while counter < 1000:
+    while counter < 2:
         try:
             # Fetch a random Vietnamese Wikipedia article
             random_article_url = "https://vi.wikipedia.org/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=1&format=json"
